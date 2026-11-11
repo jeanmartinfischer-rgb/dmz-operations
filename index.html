@@ -243,12 +243,11 @@ $('settings-close').onclick = () => settings.close();
 
 const welcome = document.createElement('p');
 welcome.id = 'dmz-welcome';
-document.querySelector('.hero').after(welcome);
+document.querySelector('main .cats').before(welcome);
 const profileInput = $('settings-profile').elements.player;
 function showWelcome() {
   const name = profileInput.value.trim();
-  welcome.hidden = !name;
-  welcome.textContent = name ? 'Bienvenue en mission, ' + name : '';
+  welcome.textContent = name ? 'Bienvenue en mission, ' + name : 'Bienvenue en mission';
 }
 profileInput.value = localStorage.getItem(profileKey) || '';
 showWelcome();
@@ -563,6 +562,7 @@ $('export').onclick=()=>{let blob=new Blob([JSON.stringify({app:'DMZ OPERATIONS'
   mix-blend-mode:normal;opacity:1;
 }
 #dmz-welcome {
+  display:block;position:relative;z-index:1;overflow-wrap:anywhere;
   margin:8px 0 14px;padding:10px 14px;border:1px solid #647881;
   border-left:3px solid #ff821c;border-radius:5px;
   font-family:'Arial Narrow',Arial,sans-serif;font-weight:700;letter-spacing:.06em;
