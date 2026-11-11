@@ -58,6 +58,47 @@ button,input{font:inherit}button{color:inherit;cursor:pointer;-webkit-tap-highli
 .toast{position:fixed;z-index:20;top:15px;left:50%;transform:translateX(-50%);padding:11px 16px;background:#123c2a;border:1px solid var(--green);color:#eafff1;font-size:12px;font-weight:800;display:none;box-shadow:0 8px 25px #0008}
 .hidden{display:none!important}
 @media(max-width:680px){.shell{padding:8px 9px 18px}.hero{min-height:285px}.hero-content{padding:20px 17px}.hero:before{background-position:56% center}.brandlogo{width:min(320px,88%)}.operation-title{font-size:30px}.hero-bottom{margin-top:20px}.tiles{grid-template-columns:repeat(5,145px);overflow-x:auto;padding:2px 0 9px;scroll-snap-type:x mandatory}.tile{min-height:102px;scroll-snap-align:start}.toolbar{gap:6px}.pill{padding:10px 11px;font-size:11px}.items{grid-template-columns:1fr}.ghead{min-height:60px;padding:10px}.gtitle{font-size:12px}.stat label{font-size:9px}.bottom button{font-size:8px}.bottom button b{font-size:21px}.map-preview{height:260px}}
+
+/* Cinematic MW4 visual upgrade */
+body{background:#050709 url("https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/mw4/common/vault-edition/MW4LP_VE_KA.webp") center 5%/cover fixed no-repeat}
+body:before{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,#050709d9,#070b0ff2 42%,#050709f5);pointer-events:none}
+.shell{max-width:1280px}
+.hero{min-height:390px;border:1px solid #8a8f8d;border-radius:0;clip-path:none;box-shadow:0 18px 55px #000a}
+.hero:before{background-image:linear-gradient(90deg,#05080cf5 0%,#070b0dcc 34%,#070b0d65 64%,#070b0d20 100%),url("https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/mw4/common/vault-edition/MW4LP_VE_KA.webp");background-size:cover;background-position:center 43%;filter:none}
+.hero-content{padding:30px 34px 24px}
+.brandlogo{width:min(460px,88%);max-height:110px;object-fit:contain;object-position:left center}
+.operation-title{font-size:clamp(30px,6vw,58px);letter-spacing:.1em}
+.operation-title span,.topline strong{color:#ffc629}
+.hero-bottom{border-color:#b8bfc0;background:#05090ddd}
+.pulse,.gicon,.chev{color:#ffc629}
+.stats{border-color:#b5b9b7;background:linear-gradient(110deg,#10171def,#070b0def);clip-path:none}
+.stat strong{font-size:clamp(27px,4.4vw,40px)}
+.progress-track{height:6px;background:#30383b}
+.progress-track i{background:linear-gradient(90deg,#ff8a18,#ffd02d);box-shadow:0 0 16px #ff8a18}
+.tile{min-height:138px;border-color:#727d80;border-radius:0;box-shadow:0 8px 24px #0007}
+.tile:before{filter:grayscale(.28) brightness(.72)}
+.tile.active{border-color:#ffc629;box-shadow:0 0 22px #ffb72b66,inset 0 0 0 1px #ffc629}
+.toolbar .searchbox input{border-color:#9ba4a5;background:#070c10ef}
+.pill{border-color:#798487;background:#0b1116ef;border-radius:0}
+.pill.active{border-color:#ffc629;color:#ffd66a;box-shadow:0 0 14px #ffb72b33}
+.groups-frame{border-color:#8c9798;background:#080d11ed}
+.group{border-color:#7c8789}
+.ghead{background:linear-gradient(90deg,#1b252b,#080d11);min-height:70px}
+.item{border-color:#344147;background:linear-gradient(100deg,#172128,#0b1116)}
+.item.done{border-color:#397d58;background:#0b1c15}
+.bottom{background:#05080eef;border-top:1px solid #8b9698}
+.bottom button.active{color:#ffc629;text-shadow:0 0 16px #ffb72b}
+.operator-strip{margin:14px 0 18px;border:1px solid #606d70;background:#070b10ef;padding:10px}
+.operator-label{font-size:10px;letter-spacing:.25em;color:#ffc629;font-weight:900;margin:2px 4px 9px}
+.operator-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.operator-card{height:160px;position:relative;overflow:hidden;border:1px solid #667276;background:#111;isolation:isolate}
+.operator-card:before{content:"";position:absolute;inset:0;z-index:-2;background-image:var(--opimg);background-size:cover;background-position:center 23%;filter:grayscale(.5) contrast(1.08)}
+.operator-card:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#030608f5,transparent 76%)}
+.operator-card span{position:absolute;bottom:0;left:0;right:0;padding:9px 11px;font-size:12px;font-weight:900;letter-spacing:.17em;background:#05090a99;border-top:1px solid #ffffff44}
+.operator-card:first-child{border-color:#ffc629;box-shadow:inset 0 0 0 1px #ffc629}
+.operator-card:first-child span{color:#ffd45a}
+@media(max-width:680px){.hero{min-height:340px}.hero-content{padding:23px 17px}.hero:before{background-position:54% center}.brandlogo{width:min(340px,95%);max-height:84px}.operation-title{font-size:37px}.subtitle{font-size:9px;letter-spacing:.26em}.operator-grid{grid-template-columns:repeat(4,125px);overflow-x:auto;scroll-snap-type:x mandatory}.operator-card{height:145px;scroll-snap-align:start}.tile{min-height:112px}.tiles{grid-template-columns:repeat(5,150px)}}
+
 </style>
 </head>
 <body>
@@ -70,7 +111,7 @@ button,input{font:inherit}button{color:inherit;cursor:pointer;-webkit-tap-highli
 <div class="operation-title">DMZ <span>OPERATIONS</span></div><div class="subtitle">SUIVI D’EXTRACTION • CHECKLIST PERSONNELLE</div>
 <div class="hero-bottom"><span class="pulse">▥</span><div><b>SUIVI D’EXTRACTION</b><small id="missionStatus">MISSION EN COURS — 0% VALIDÉ</small></div></div>
 </div></header>
-<div class="stats"><div class="stat"><strong id="total">58</strong><label>ÉLÉMENTS À RÉCUPÉRER</label></div><div class="stat"><strong id="done">0</strong><label>VALIDÉS</label></div><div class="stat"><strong id="left">58</strong><label>RESTANTS</label></div></div>
+<section class="operator-strip"><div class="operator-label">OPERATORS // TASK FORCE</div><div class="operator-grid"><div class="operator-card" style="--opimg:url('https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/mw4/common/vault-edition/MW4LP_VE_Mobile_HAGhost.webp')"><span>GHOST // 01</span></div><div class="operator-card" style="--opimg:url('https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/mw4/common/vault-edition/MW4LP_VE_Mobile_HAVal.webp')"><span>VALERIA // 02</span></div><div class="operator-card" style="--opimg:url('https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/mw4/common/vault-edition/MW4LP_VE_Mobile_HABlix.webp')"><span>BLIX // 03</span></div><div class="operator-card" style="--opimg:url('https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/mw4/common/vault-edition/MW4LP_VE_Mobile_HAPrice.webp')"><span>PRICE // 04</span></div></div></section><div class="stats"><div class="stat"><strong id="total">58</strong><label>ÉLÉMENTS À RÉCUPÉRER</label></div><div class="stat"><strong id="done">0</strong><label>VALIDÉS</label></div><div class="stat"><strong id="left">58</strong><label>RESTANTS</label></div></div>
 <div class="progress-track"><i id="progress"></i></div>
 <div class="tiles" id="tiles">
 <button class="tile active" data-cat="recipes" style="--tileimg:url('https://www.callofduty.com/content/dam/atvi/callofduty/cod-touchui/mw4/common/vault-edition/MW4LP_VE_Weapons.webp')"><span><em>⌁</em>RECETTES<br>& PLANS</span></button>
