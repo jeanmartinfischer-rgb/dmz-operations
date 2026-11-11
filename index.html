@@ -198,7 +198,7 @@ render();
   </header>
   <details><summary>Mon profil</summary>
   <form id="settings-profile">
-    <label>Ton nom <input name="player" maxlength="80" placeholder="Jean Martin" autocomplete="name"></label>
+    <label>Ton nom <input name="player" maxlength="80" placeholder="Jean Martin" autocomplete="off"></label>
     <button class="btn">Enregistrer le nom</button>
   </form></details>
   <details><summary>Mes catégories</summary>
@@ -211,9 +211,9 @@ render();
     <button class="btn" type="button" id="remove-category" hidden>Supprimer la catégorie</button>
   </form></details>
   <details><summary>Ajouter un élément</summary>
-  <form id="settings-item">
+  <form id="settings-item" autocomplete="off">
     <label>Catégorie de l’élément <select name="family"></select></label>
-    <label>Nom de l’élément <input name="label" required maxlength="120" autocomplete="off"></label>
+    <label>Nom de l’élément <textarea name="inventoryItem" rows="1" required maxlength="120" autocomplete="off" aria-describedby="item-suggestions"></textarea></label>
     <div id="item-suggestions" hidden>
       <span>Matériaux proposés</span>
       <div id="item-suggestion-options"></div>
@@ -398,7 +398,7 @@ const itemForm = $('settings-item');
 const itemVisual = itemForm.elements.visual;
 const iconPicker = $('material-icon-picker');
 const itemPhoto = itemForm.elements.photo;
-const itemName = itemForm.elements.label;
+const itemName = itemForm.elements.inventoryItem;
 const suggestions = $('item-suggestions');
 const suggestionOptions = $('item-suggestion-options');
 const searchableName = value => value.toLowerCase().normalize('NFD')
@@ -436,10 +436,13 @@ for (const [id, name] of predefinedChoices) {
   const key = searchableName(name);
   if (!searchableChoices.has(key)) searchableChoices.set(key, {id, name, radio});
 }
+itemName.addEventListener('keydown', event => {
+  if (event.key === 'Enter' && !event.isComposing) event.preventDefault();
+});
 itemName.addEventListener('input', () => {
   clearItemSuggestions();
   const query = searchableName(itemName.value);
-  if (query.length < 2) return;
+  if (!query) return;
   const rank = key => key === query ? 0 : key.startsWith(query) ? 1 : 2;
   const matches = [...searchableChoices]
     .filter(([key]) => query.split(' ').every(word => key.includes(word)))
@@ -576,7 +579,7 @@ $('remove-category').onclick = () => {
 $('settings-item').onsubmit = async event => {
   event.preventDefault();
   const form = event.currentTarget;
-  const label = form.elements.label.value.trim();
+  const label = itemName.value.replace(/\s+/g, ' ').trim();
   if (!label) return;
   const family = Number(familySelect.value);
   const item = {id:crypto.randomUUID(), family, label, ingredients:form.elements.ingredients.value.trim()};
@@ -930,6 +933,7 @@ for (const scene of document.querySelectorAll('.desktop-scene')) {
 #material-icon-picker label{display:grid;justify-items:center;cursor:pointer}
 #dmz-settings #material-icon-picker input{width:auto;padding:0}
 #item-suggestions{color:#ffad68;font-size:.9rem}
+#settings-item textarea[name="inventoryItem"]{resize:none}
 #item-suggestion-options{display:grid;gap:4px;margin-top:4px}
 #item-suggestion-options button{display:flex;align-items:center;gap:8px;min-height:44px;padding:3px 8px;color:#eef3f5;background:#0b141a;border:1px solid #485d68;border-radius:6px;text-align:left;font:inherit;cursor:pointer}
 #item-suggestion-options button:is(:hover,:focus-visible){border-color:#ff821c}
