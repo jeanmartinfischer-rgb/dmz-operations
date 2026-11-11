@@ -102,8 +102,7 @@ body{background:#05090c;padding:0}.app{max-width:620px;padding:0;margin:auto}.re
 <nav class="cats" aria-label="Catégories d'inventaire"><button class="cat active" data-cat="recipes"><span>▤<br>RECETTES & PLANS</span></button><button class="cat" data-cat="materials"><span>⬡<br>MATÉRIAUX & RÉCUP.</span></button><button class="cat" data-cat="weapons"><span>⌁<br>ARMES</span></button><button class="cat" data-cat="gear"><span>▣<br>ÉQUIPEMENTS & AMÉL.</span></button><button class="cat" data-cat="support"><span>✈<br>TIRS DE SOUTIEN</span></button></nav>
 <section class="panel active" id="panel-list"><div class="toolbar"><input class="search" id="search" placeholder="⌕ Rechercher un élément..."><button class="btn active" data-filter="all">Tous</button><button class="btn" data-filter="missing">Manquants</button><button class="btn good" data-filter="done">✓ Validés</button></div><div class="inventory-shell"><div class="heading"><h2>INVENTAIRE DE MISSION</h2><small id="count">58 ÉLÉMENTS</small></div><div class="frame" id="inventory"></div><span class="inventory-corner" aria-hidden="true"></span></div></section>
 <section class="panel" id="panel-progress"><div class="heading"><h2>PROGRESSION</h2></div><div class="frame" style="padding:22px"><h1 id="bigpct">0%</h1><p class="notice" id="report">Aucun élément validé pour le moment.</p><div class="track"><div class="fill" id="fill2"></div></div><div class="visual map" style="height:260px"><label>SECTEUR DMZ // CARTE TACTIQUE</label></div></div></section>
-<section class="panel" id="panel-backup"><div class="heading"><h2>SAUVEGARDE</h2></div><div class="frame" style="padding:20px"><p class="notice">Exporte ta progression dans un fichier JSON pour la conserver dans iCloud Drive ou la transférer vers un autre appareil.</p><div class="toolbar"><button class="btn active" id="export">↓ EXPORTER LA SAUVEGARDE</button><button class="btn" id="import">↑ IMPORTER</button><input type="file" id="file" accept="application/json" hidden></div></div></section>
-</main><nav class="bottom"><button class="active" data-page="list"><b>⌂</b>ACCUEIL</button><button data-page="list"><b>☑</b>CHECKLIST</button><button data-page="progress"><b>◫</b>PROGRESSION</button><button data-page="backup"><b>⇩</b>SAUVEGARDE</button><button data-page="backup"><b>⇄</b>IMPORT / EXPORT</button></nav><div class="toast" id="toast"></div>
+</main><div class="toast" id="toast"></div>
 <script>
 const groups=[
 {type:'recipes',name:'PERSONNEL & ACCÈS',icon:'▣',items:[['emergency','Plan de la carte magnétique de sortie d’urgence'],['breach','Charge brise-porte']]},
@@ -128,7 +127,7 @@ function update(){let n=checked.size,p=Math.round(n/all.length*100);$('total').t
 function render(){let count=0,html='';groups.forEach((g,i)=>{let inCategory=category==='all'||category===g.type||(category==='recipes'&&g.type==='recipes')||(category==='materials'&&g.type==='materials')||(category==='weapons'&&g.name==='ARMES')||(category==='gear'&&['ÉQUIPEMENTS','AMÉLIORATIONS'].includes(g.name))||(category==='support'&&g.name==='TIRS DE SOUTIEN');if(!inCategory)return;let items=g.items.filter(([id,name])=>(!query||name.toLocaleLowerCase('fr').includes(query))&&(filter==='all'||(filter==='done'?checked.has(id):!checked.has(id))));if(!items.length)return;count+=items.length;let n=g.items.filter(([id])=>checked.has(id)).length;html+='<section class="group"><button class="groupHead" data-toggle="'+i+'"><span class="ico">'+g.icon+'</span><span class="gname">'+g.name+'</span><span class="gcount">'+n+'/'+g.items.length+'</span><span class="arrow">⌄</span></button><div class="items" id="group'+i+'">'+items.map(([id,name])=>'<label class="item '+(checked.has(id)?'done':'')+'"><input type="checkbox" data-id="'+id+'" '+(checked.has(id)?'checked':'')+'><span>'+name+'</span></label>').join('')+'</div></section>'});$('inventory').innerHTML=html||'<p class="notice">Aucun élément trouvé.</p>';$('count').textContent=count+' ÉLÉMENTS';document.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=> $('group'+b.dataset.toggle).classList.toggle('hide'));document.querySelectorAll('[data-id]').forEach(b=>b.onchange=()=>{if(b.checked)checked.add(b.dataset.id);else checked.delete(b.dataset.id);update();toast('Progression enregistrée')})}
 document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{category=b.dataset.cat;document.querySelectorAll('[data-cat]').forEach(x=>x.classList.toggle('active',x===b));render()});document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));render()});$('search').oninput=e=>{query=e.target.value.toLocaleLowerCase('fr').trim();render()};
 function page(p){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));$('panel-'+(p==='list'?'list':p)).classList.add('active');document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===p));window.scrollTo({top:0,behavior:'smooth'})}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>page(b.dataset.page));
-$('export').onclick=()=>{let blob=new Blob([JSON.stringify({app:'DMZ OPERATIONS',completed:[...checked],exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='dmz-operations-sauvegarde.json';a.click();URL.revokeObjectURL(u);toast('Sauvegarde exportée')};$('import').onclick=()=>$('file').click();$('file').onchange=async e=>{try{let d=JSON.parse(await e.target.files[0].text()),a=Array.isArray(d)?d:d.completed;if(!Array.isArray(a))throw 0;checked=new Set(a.filter(x=>valid.has(x)));update();toast('Sauvegarde restaurée')}catch(x){toast('Fichier invalide')}e.target.value=''};update();
+update();
 </script><style>
 /* Restore visible, usable controls and live data. */
 .reference-ui{display:none}.app{padding:10px 10px 100px}.app>header{display:block}.app>.stats{display:grid}.app>.track{display:block}.app>.cats{display:grid}.app>.panel.active{display:block}.bottom{display:flex}.toast{z-index:30}.hero{height:265px}.items.hide{display:none}.search{color:white;background:#0b1217}.btn,.cat,.groupHead,.bottom button{min-height:44px}.panel{scroll-margin-top:12px}
@@ -190,27 +189,43 @@ render();
 .recipe-ingredients{display:block;color:#b7c8cf;margin-top:4px;font-size:.85em;white-space:pre-line}
 </style>
 <dialog id="dmz-settings" aria-labelledby="settings-title">
-  <h2 id="settings-title">Paramètres</h2>
-  <button type="button" class="btn" id="settings-close">Fermer</button>
+  <header class="settings-banner">
+    <h2 id="settings-title">Réglages</h2>
+    <button type="button" class="btn" id="settings-close">Fermer</button>
+  </header>
+  <details><summary>Mon profil</summary>
   <form id="settings-profile">
     <label>Ton nom <input name="player" maxlength="80" placeholder="Jean Martin" autocomplete="name"></label>
     <button class="btn">Enregistrer le nom</button>
-  </form>
+  </form></details>
+  <details><summary>Mes catégories</summary>
   <form id="settings-family">
-    <h3>Gérer mes catégories</h3>
     <label>Catégorie <select name="edit"></select></label>
     <label>Nom <input name="label" required maxlength="80"></label>
     <label>Emplacement <select name="type"><option value="custom">Mes catégories</option><option value="recipes">Recettes &amp; plans</option><option value="materials">Matériaux &amp; récupérations</option></select></label>
     <label>Photo facultative <input type="file" name="photo" accept="image/*"></label>
     <button class="btn">Enregistrer la catégorie</button>
     <button class="btn" type="button" id="remove-category" hidden>Supprimer la catégorie</button>
-  </form>
+  </form></details>
+  <details><summary>Ajouter un élément</summary>
   <form id="settings-item">
     <label>Catégorie de l’élément <select name="family"></select></label>
     <label>Nom de l’élément <input name="label" required maxlength="120"></label>
-    <label>Ingrédients ou composants <textarea name="ingredients" maxlength="1000" rows="3" placeholder="Un ingrédient par ligne, avec sa quantité"></textarea></label>
+    <details><summary>Ajouter une note à l’élément (facultatif)</summary>
+      <label>Note affichée sous le nom de l’élément
+        <textarea name="ingredients" maxlength="1000" rows="3" placeholder="Ex. : 2 composants électroniques et 1 batterie"></textarea>
+      </label>
+    </details>
     <button class="btn">Ajouter à l’inventaire</button>
-  </form>
+  </form></details>
+  <details><summary>Sauvegarde</summary>
+    <p class="notice">Exporte tes éléments cochés dans un fichier JSON ou restaure-les depuis un fichier.</p>
+    <div class="settings-actions">
+      <button type="button" class="btn" id="export">Exporter la progression</button>
+      <button type="button" class="btn" id="import">Importer une sauvegarde</button>
+      <input type="file" id="file" accept=".json,application/json" hidden>
+    </div>
+  </details>
   <p id="settings-status" role="status"></p>
 </dialog>
 <script>
@@ -274,14 +289,6 @@ function discardSettings() {
   status.textContent = '';
 }
 settings.addEventListener('close', discardSettings);
-for (const form of settings.querySelectorAll('form')) {
-  const cancel = document.createElement('button');
-  cancel.type = 'button';
-  cancel.className = 'btn';
-  cancel.textContent = 'Annuler';
-  cancel.onclick = () => settings.close();
-  form.append(cancel);
-}
 async function compressCategoryPhoto(file) {
   const bitmap = await createImageBitmap(file);
   try {
@@ -419,7 +426,7 @@ $('settings-item').onsubmit = event => {
 };
 refreshFamilies();
 refreshCategoryEditor();
-update();
+$('export').onclick=()=>{let blob=new Blob([JSON.stringify({app:'DMZ OPERATIONS',completed:[...checked],exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='dmz-operations-sauvegarde.json';a.click();URL.revokeObjectURL(u);status.textContent='Sauvegarde exportée.'};$('import').onclick=()=>$('file').click();$('file').onchange=async e=>{try{let d=JSON.parse(await e.target.files[0].text()),a=Array.isArray(d)?d:d.completed;if(!Array.isArray(a))throw 0;checked=new Set(a.filter(x=>valid.has(x)));update();status.textContent='Sauvegarde restaurée.'}catch(x){status.textContent='Fichier invalide.'}e.target.value=''};update();
 </script>
 <style>
 .groupHead.has-category-photo::before{display:none}
@@ -501,4 +508,13 @@ update();
 .cats .cat {
   clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 7px,100% calc(100% - 7px),calc(100% - 7px) 100%,7px 100%,0 calc(100% - 7px),0 7px);
 }
+.app{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+#dmz-settings{box-sizing:border-box;max-width:calc(100% - 24px);padding:14px;background:#0b141a;border-color:#677983}
+.settings-banner{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;min-height:115px;padding:12px;border-radius:7px;background:linear-gradient(0deg,#071015 5%,transparent 95%),url('assets/dmz-ui-reference.jpg') left top / 200% auto no-repeat}
+.settings-banner h2{margin:0;color:#fff;text-shadow:0 2px 6px #000}
+#dmz-settings details{margin-top:8px;padding:0 10px 8px;background:#121f27;border:1px solid #394d57;border-radius:7px}
+#dmz-settings summary{min-height:44px;padding:12px 0 0;cursor:pointer;font-weight:bold}
+#dmz-settings details[open]>summary{color:#ffad68}
+.settings-actions{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:8px}
+#settings-status:empty{display:none}
 </style></body></html>
