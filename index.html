@@ -255,6 +255,17 @@ function showWelcome() {
     operator.className = 'welcome-operator';
     operator.textContent = name;
     welcome.append(operator);
+  } else {
+    const addName = document.createElement('button');
+    addName.type = 'button';
+    addName.className = 'welcome-add-name';
+    addName.textContent = 'Renseigner mon nom';
+    addName.onclick = () => {
+      settings.showModal();
+      profileInput.closest('details').open = true;
+      profileInput.focus();
+    };
+    welcome.append(addName);
   }
 }
 profileInput.value = localStorage.getItem(profileKey) || '';
@@ -363,9 +374,14 @@ render = function () {
 };
 $('settings-profile').onsubmit = event => {
   event.preventDefault();
-  localStorage.setItem(profileKey, profileInput.value.trim());
+  try {
+    localStorage.setItem(profileKey, profileInput.value.trim());
+  } catch {
+    status.textContent = 'Ce navigateur ne permet pas d’enregistrer le nom.';
+    return;
+  }
   showWelcome();
-  status.textContent = 'Nom enregistré.';
+  settings.close();
 };
 $('settings-family').onsubmit = async event => {
   event.preventDefault();
@@ -662,6 +678,10 @@ $('export').onclick=()=>{let blob=new Blob([JSON.stringify({app:'DMZ OPERATIONS'
 .welcome-operator {
   color:#ffae60;font-size:clamp(14px,2vw,19px);
   font-weight:800;font-style:italic;
+}
+.welcome-add-name {
+  background:transparent;color:#ffae60;border:0;padding:6px 0;
+  font:inherit;text-decoration:underline;cursor:pointer;
 }
 </style>
 <script>
