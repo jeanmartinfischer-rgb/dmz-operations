@@ -213,7 +213,11 @@ render();
   <details><summary>Ajouter un élément</summary>
   <form id="settings-item">
     <label>Catégorie de l’élément <select name="family"></select></label>
-    <label>Nom de l’élément <input name="label" required maxlength="120"></label>
+    <label>Nom de l’élément <input name="label" required maxlength="120" autocomplete="off"></label>
+    <div id="item-suggestions" hidden>
+      <span>Matériaux proposés</span>
+      <div id="item-suggestion-options"></div>
+    </div>
     <fieldset class="item-visual">
       <legend>Illustration facultative</legend>
       <label>Source <select name="visual"><option value="">Aucune</option><option value="icon">Icône prédéfinie</option><option value="photo">Ma photo</option></select></label>
@@ -394,6 +398,16 @@ const itemForm = $('settings-item');
 const itemVisual = itemForm.elements.visual;
 const iconPicker = $('material-icon-picker');
 const itemPhoto = itemForm.elements.photo;
+const itemName = itemForm.elements.label;
+const suggestions = $('item-suggestions');
+const suggestionOptions = $('item-suggestion-options');
+const searchableName = value => value.toLowerCase().normalize('NFD')
+  .replace(/\p{M}/gu, '').replace(/œ/g, 'oe').replace(/[^a-z0-9]+/g, ' ').trim();
+function clearItemSuggestions() {
+  suggestions.hidden = true;
+  suggestionOptions.replaceChildren();
+}
+itemForm.addEventListener('reset', clearItemSuggestions);
 function syncItemVisual() {
   iconPicker.hidden = itemVisual.value !== 'icon';
   $('item-photo-field').hidden = itemVisual.value !== 'photo';
@@ -406,6 +420,7 @@ const predefinedChoices = [
   ...expandedMaterialIcons.map((name, index) => ['mw4-' + index, name]),
   ...groups.filter(group => group.type === 'materials').flatMap(group => group.items)
 ];
+const searchableChoices = new Map();
 for (const [id, name] of predefinedChoices) {
   const thumbnail = materialThumbnail(id);
   if (!thumbnail) continue;
@@ -418,7 +433,33 @@ for (const [id, name] of predefinedChoices) {
   choice.title = name;
   choice.append(radio, thumbnail);
   iconPicker.append(choice);
+  const key = searchableName(name);
+  if (!searchableChoices.has(key)) searchableChoices.set(key, {id, name, radio});
 }
+itemName.addEventListener('input', () => {
+  clearItemSuggestions();
+  const query = searchableName(itemName.value);
+  if (query.length < 2) return;
+  const rank = key => key === query ? 0 : key.startsWith(query) ? 1 : 2;
+  const matches = [...searchableChoices]
+    .filter(([key]) => query.split(' ').every(word => key.includes(word)))
+    .sort(([a], [b]) => rank(a) - rank(b)).slice(0, 6);
+  for (const [, {id, name, radio}] of matches) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.append(materialThumbnail(id), document.createTextNode(name));
+    button.onclick = () => {
+      itemName.value = name;
+      itemVisual.value = 'icon';
+      radio.checked = true;
+      syncItemVisual();
+      itemName.focus();
+      clearItemSuggestions();
+    };
+    suggestionOptions.append(button);
+  }
+  suggestions.hidden = !matches.length;
+});
 itemVisual.addEventListener('change', syncItemVisual);
 syncItemVisual();
 render = function () {
@@ -888,6 +929,11 @@ for (const scene of document.querySelectorAll('.desktop-scene')) {
 #material-icon-picker[hidden],#dmz-settings #item-photo-field[hidden]{display:none}
 #material-icon-picker label{display:grid;justify-items:center;cursor:pointer}
 #dmz-settings #material-icon-picker input{width:auto;padding:0}
+#item-suggestions{color:#ffad68;font-size:.9rem}
+#item-suggestion-options{display:grid;gap:4px;margin-top:4px}
+#item-suggestion-options button{display:flex;align-items:center;gap:8px;min-height:44px;padding:3px 8px;color:#eef3f5;background:#0b141a;border:1px solid #485d68;border-radius:6px;text-align:left;font:inherit;cursor:pointer}
+#item-suggestion-options button:is(:hover,:focus-visible){border-color:#ff821c}
+#item-suggestion-options .material-thumbnail{flex:none}
 .item-custom-photo{object-fit:cover;background:none}
 .material-thumbnail-expanded{
   background-image:url('assets/mw4-materiaux-31.jpg');background-size:800% 400%;
