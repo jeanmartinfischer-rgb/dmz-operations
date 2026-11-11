@@ -354,8 +354,36 @@ custom.families.forEach(addFamily);
 custom.items.forEach(addInventoryItem);
 checked = new Set([...checked].filter(id => valid.has(id)));
 const renderInventory = render;
+const materialIcons = [
+  'circuit','power','communication','control','machined','structural',
+  'nano','armor','military','fibers','stock','nitro',
+  'bond','catalyst','detonators','meteor','nylon','synthetic',
+  'adm','intel','execution','bio'
+];
+function materialThumbnail(id) {
+  const index = materialIcons.indexOf(id);
+  if (index < 0) return null;
+  const thumbnail = document.createElement('span');
+  thumbnail.className = 'material-thumbnail';
+  thumbnail.setAttribute('aria-hidden', 'true');
+  thumbnail.style.backgroundPosition = (index % 6 * 20) + '% ' + (Math.floor(index / 6) * 100 / 3) + '%';
+  return thumbnail;
+}
 render = function () {
   renderInventory();
+  for (const group of document.querySelectorAll('#inventory [data-family-type="materials"]')) {
+    const header = group.querySelector('.groupHead');
+    const representative = groups[Number(header.dataset.toggle)].items[0]?.[0];
+    const thumbnail = materialThumbnail(representative);
+    if (thumbnail) {
+      header.classList.add('has-material-thumbnail');
+      header.prepend(thumbnail);
+    }
+    for (const checkbox of group.querySelectorAll('.item input[data-id]')) {
+      const itemThumbnail = materialThumbnail(checkbox.dataset.id);
+      if (itemThumbnail) checkbox.after(itemThumbnail);
+    }
+  }
   custom.families.forEach((family, index) => {
     const button = document.querySelector('#inventory [data-toggle="' + (builtInCount + index) + '"]');
     if (!button || !family.photo) return;
@@ -763,5 +791,16 @@ for (const scene of document.querySelectorAll('.desktop-scene')) {
 }
 #inventory [data-family-type="materials"] :is(.ico,.gcount,.arrow) {
   flex-shrink:0;
+}
+.material-thumbnail{
+  display:inline-block;flex:0 0 auto;width:38px;aspect-ratio:1;
+  border-radius:4px;background:url('assets/materiaux-icones.jpg') no-repeat;
+  background-size:600% 400%;
+}
+#inventory .groupHead.has-material-thumbnail::before{display:none}
+#inventory .groupHead .material-thumbnail{width:clamp(36px,6vw,54px)}
+.cats .cat[data-cat="materials"]{
+  background:linear-gradient(0deg,#070d12,#070d1255 45%,transparent 85%),
+    url('assets/materiaux-icones.jpg') center top / 100% auto no-repeat;
 }
 </style></body></html>
