@@ -246,11 +246,24 @@ welcome.id = 'dmz-welcome';
 document.querySelector('main .cats').before(welcome);
 const profileInput = $('settings-profile').elements.player;
 function showWelcome() {
-  const name = profileInput.value.trim();
-  welcome.textContent = name ? 'Bienvenue en mission, ' + name : 'Bienvenue en mission';
+  const name = (localStorage.getItem(profileKey) || '').trim();
+  const title = document.createElement('strong');
+  title.textContent = 'Bienvenue en mission';
+  welcome.replaceChildren(title);
+  if (name) {
+    const operator = document.createElement('span');
+    operator.className = 'welcome-operator';
+    operator.textContent = name;
+    welcome.append(operator);
+  }
 }
 profileInput.value = localStorage.getItem(profileKey) || '';
 showWelcome();
+window.addEventListener('storage', event => {
+  if (event.key !== profileKey && event.key !== null) return;
+  showWelcome();
+  if (!settings.open) profileInput.value = localStorage.getItem(profileKey) || '';
+});
 
 const status = $('settings-status');
 const custom = JSON.parse(localStorage.getItem(inventoryKey) || '{"families":[],"items":[]}');
@@ -612,6 +625,44 @@ $('export').onclick=()=>{let blob=new Blob([JSON.stringify({app:'DMZ OPERATIONS'
   mask-image:radial-gradient(farthest-side,transparent 74%,#000 75%);
 }
 .app > .track:has(#fill){display:none}
+.inventory-shell {
+  --inventory-outline:polygon(25px 0,38% 0,calc(38% + 12px) 9px,calc(100% - 23px) 9px,100% 32px,100% calc(100% - 23px),calc(100% - 23px) 100%,23px 100%,0 calc(100% - 23px),0 25px);
+  isolation:isolate;
+  border:0;
+  padding:1px;
+  clip-path:var(--inventory-outline);
+  background:linear-gradient(135deg,#ff9235 0%,#b75d28 4%,#455c67 16%,#233b45 60%,#627782 88%,#ff9235 100%);
+}
+.inventory-shell::before {
+  inset:1px;
+  width:auto;height:auto;
+  z-index:-1;
+  clip-path:var(--inventory-outline);
+  background:repeating-radial-gradient(ellipse at 90% 0%,transparent 0 10px,#83a8bb0a 11px 12px,transparent 13px 19px),#081218;
+  filter:none;
+}
+.inventory-shell::after,.inventory-corner {display:none}
+.inventory-shell .heading,.inventory-shell #inventory {background:transparent}
+.inventory-shell .heading {padding-top:20px}
+.inventory-shell .group,.toolbar .btn,.toolbar .search {
+  clip-path:none;border-radius:8px;border-color:#465c66;
+}
+.toolbar .btn.active {border-color:#ff951c}
+.toolbar .btn.good.active {border-color:var(--green)}
+#dmz-welcome {
+  display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;
+  background:linear-gradient(105deg,#291912,#0d171d 68%);
+  border-color:#4e4040;border-left-color:#ff821c;
+}
+#dmz-welcome strong {
+  font-family:Impact,'Arial Narrow',Arial,sans-serif;
+  font-size:clamp(16px,2.3vw,25px);font-weight:700;
+  text-transform:uppercase;letter-spacing:.085em;color:#fff1dd;
+}
+.welcome-operator {
+  color:#ffae60;font-size:clamp(14px,2vw,19px);
+  font-weight:800;font-style:italic;
+}
 </style>
 <script>
 const extractionPanel = document.querySelector('.app > .stats');
