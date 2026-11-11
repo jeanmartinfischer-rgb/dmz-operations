@@ -214,6 +214,12 @@ render();
   <form id="settings-item">
     <label>Catégorie de l’élément <select name="family"></select></label>
     <label>Nom de l’élément <input name="label" required maxlength="120"></label>
+    <fieldset class="item-visual">
+      <legend>Illustration facultative</legend>
+      <label>Source <select name="visual"><option value="">Aucune</option><option value="icon">Icône prédéfinie</option><option value="photo">Ma photo</option></select></label>
+      <div id="material-icon-picker" hidden></div>
+      <label id="item-photo-field" hidden>Choisir une photo <input type="file" name="photo" accept="image/*"></label>
+    </fieldset>
     <details><summary>Ajouter une note à l’élément (facultatif)</summary>
       <label>Note affichée sous le nom de l’élément
         <textarea name="ingredients" maxlength="1000" rows="3" placeholder="Ex. : 2 composants électroniques et 1 batterie"></textarea>
@@ -310,6 +316,7 @@ function refreshCategoryEditor() {
 }
 function discardSettings() {
   $('settings-item').reset();
+  syncItemVisual();
   profileInput.value = localStorage.getItem(profileKey) || '';
   refreshCategoryEditor();
   status.textContent = '';
@@ -369,6 +376,33 @@ function materialThumbnail(id) {
   thumbnail.style.backgroundPosition = (index % 6 * 20) + '% ' + (Math.floor(index / 6) * 100 / 3) + '%';
   return thumbnail;
 }
+const itemForm = $('settings-item');
+const itemVisual = itemForm.elements.visual;
+const iconPicker = $('material-icon-picker');
+const itemPhoto = itemForm.elements.photo;
+function syncItemVisual() {
+  iconPicker.hidden = itemVisual.value !== 'icon';
+  $('item-photo-field').hidden = itemVisual.value !== 'photo';
+  itemPhoto.required = itemVisual.value === 'photo';
+  for (const radio of iconPicker.querySelectorAll('input')) {
+    radio.required = itemVisual.value === 'icon';
+  }
+}
+for (const [id, name] of groups.filter(group => group.type === 'materials').flatMap(group => group.items)) {
+  const thumbnail = materialThumbnail(id);
+  if (!thumbnail) continue;
+  const choice = document.createElement('label');
+  const radio = document.createElement('input');
+  radio.type = 'radio';
+  radio.name = 'materialIcon';
+  radio.value = id;
+  radio.setAttribute('aria-label', name);
+  choice.title = name;
+  choice.append(radio, thumbnail);
+  iconPicker.append(choice);
+}
+itemVisual.addEventListener('change', syncItemVisual);
+syncItemVisual();
 render = function () {
   renderInventory();
   for (const group of document.querySelectorAll('#inventory [data-family-type="materials"]')) {
@@ -395,7 +429,19 @@ render = function () {
     button.prepend(photo);
   });
   for (const item of custom.items) {
-    const label = document.querySelector('[data-id="' + item.id + '"] + span');
+    const checkbox = document.querySelector('[data-id="' + item.id + '"]');
+    if (!checkbox) continue;
+    const label = checkbox.parentElement.querySelector('span:not(.material-thumbnail)');
+    if (item.photo) {
+      const photo = document.createElement('img');
+      photo.className = 'material-thumbnail item-custom-photo';
+      photo.alt = '';
+      photo.src = item.photo;
+      checkbox.after(photo);
+    } else if (item.icon) {
+      const thumbnail = materialThumbnail(item.icon);
+      if (thumbnail) checkbox.after(thumbnail);
+    }
     if (!label || !item.ingredients) continue;
     const details = document.createElement('small');
     details.className = 'recipe-ingredients';
@@ -468,18 +514,34 @@ $('remove-category').onclick = () => {
   }
   location.reload();
 };
-$('settings-item').onsubmit = event => {
+$('settings-item').onsubmit = async event => {
   event.preventDefault();
   const form = event.currentTarget;
   const label = form.elements.label.value.trim();
   if (!label) return;
   const family = Number(familySelect.value);
   const item = {id:crypto.randomUUID(), family, label, ingredients:form.elements.ingredients.value.trim()};
-  custom.items.push(item);
-  storeInventory();
+  const visual = itemVisual.value;
+  const file = itemPhoto.files[0];
+  const submit = event.submitter;
+  submit.disabled = true;
+  try {
+    if (visual === 'icon') item.icon = form.elements.materialIcon.value;
+    if (visual === 'photo') item.photo = await compressCategoryPhoto(file);
+    if (!settings.open || (file && itemPhoto.files[0] !== file)) return;
+    const items = [...custom.items, item];
+    localStorage.setItem(inventoryKey, JSON.stringify({...custom, items}));
+    custom.items = items;
+  } catch {
+    status.textContent = 'Impossible d’enregistrer cet élément. Vérifie la photo ou l’espace disponible.';
+    return;
+  } finally {
+    submit.disabled = false;
+  }
   addInventoryItem(item);
   update();
   form.reset();
+  syncItemVisual();
   familySelect.value = family;
   status.textContent = label + ' ajouté à l’inventaire.';
 };
@@ -803,4 +865,10 @@ for (const scene of document.querySelectorAll('.desktop-scene')) {
   background:linear-gradient(0deg,#070d12,#070d1255 45%,transparent 85%),
     url('assets/materiaux-icones.jpg') center top / 100% auto no-repeat;
 }
+.item-visual{display:grid;gap:9px;border:1px solid #465c66;border-radius:7px;padding:9px;margin:0;min-width:0}
+#material-icon-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+#material-icon-picker[hidden],#dmz-settings #item-photo-field[hidden]{display:none}
+#material-icon-picker label{display:grid;justify-items:center;cursor:pointer}
+#dmz-settings #material-icon-picker input{width:auto;padding:0}
+.item-custom-photo{object-fit:cover;background:none}
 </style></body></html>
