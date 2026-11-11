@@ -121,7 +121,7 @@ const groups=[
 {type:'materials',name:'BIOLOGIE',icon:'✣',items:[['bio','Biomatériaux']]}
 ];
 const all=groups.flatMap(g=>g.items),valid=new Set(all.map(x=>x[0]));let checked=new Set(),category='recipes',filter='all',query='';const $=x=>document.getElementById(x);
-try{let a=JSON.parse(localStorage.getItem('dmz-operations-v1')||'[]');if(Array.isArray(a))checked=new Set(a.filter(x=>valid.has(x)))}catch(e){}
+try{let a=JSON.parse(localStorage.getItem('dmz-operations-v1')||'[]');if(Array.isArray(a))checked=new Set(a.filter(x=>typeof x==='string'))}catch(e){}
 function save(){try{localStorage.setItem('dmz-operations-v1',JSON.stringify([...checked]))}catch(e){}}
 function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1800)}
 function update(){let n=checked.size,p=Math.round(n/all.length*100);$('total').textContent=all.length;$('done').textContent=n;$('left').textContent=all.length-n;$('pct').textContent=p+'%';$('heroPct').textContent=p+'%';$('mission').textContent='SUIVI D’EXTRACTION — '+p+'%';$('fill').style.width=p+'%';$('fill2').style.width=p+'%';$('bigpct').textContent=p+'%';$('report').textContent=n+' éléments validés sur '+all.length+'. '+(p===100?'Extraction réussie.':'Continue la mission avant extraction.');save();render()}
@@ -177,4 +177,138 @@ render();
   opacity: .88;
   pointer-events: none;
 }
-</style></body></html>
+</style>
+<style>
+.settings-trigger{position:absolute;z-index:4;top:0;right:0;width:max(44px,9%);height:max(44px,28%);background:transparent;border:0;cursor:pointer}
+.settings-trigger:focus-visible{outline:2px solid #ff821c;outline-offset:-4px}
+#dmz-welcome{margin:0 0 12px;padding:8px 12px;color:#ffba78;background:#10181d;border-left:2px solid #ff821c}
+#dmz-settings{width:min(92vw,490px);max-height:85dvh;overflow:auto;background:#10191f;color:white;border:1px solid #ff821c;border-radius:9px;padding:18px}
+#dmz-settings::backdrop{background:#000b}
+#dmz-settings form{display:grid;gap:10px;margin:14px 0}
+#dmz-settings label{display:grid;gap:4px}
+#dmz-settings input,#dmz-settings select,#dmz-settings textarea{background:#070e13;color:white;border:1px solid #74858c;border-radius:5px;padding:9px;font:16px Arial,sans-serif;width:100%}
+.recipe-ingredients{display:block;color:#b7c8cf;margin-top:4px;font-size:.85em;white-space:pre-line}
+</style>
+<dialog id="dmz-settings" aria-labelledby="settings-title">
+  <h2 id="settings-title">Paramètres</h2>
+  <button type="button" class="btn" id="settings-close">Fermer</button>
+  <form id="settings-profile">
+    <label>Ton nom <input name="player" maxlength="80" placeholder="Jean Martin" autocomplete="name"></label>
+    <button class="btn">Enregistrer le nom</button>
+  </form>
+  <form id="settings-family">
+    <label>Nouvelle catégorie <input name="label" required maxlength="80"></label>
+    <label>Afficher dans <select name="type"><option value="recipes">Recettes &amp; plans</option><option value="materials">Matériaux &amp; récupérations</option></select></label>
+    <button class="btn">Ajouter la catégorie</button>
+  </form>
+  <form id="settings-item">
+    <label>Catégorie de l’élément <select name="family"></select></label>
+    <label>Nom de l’élément <input name="label" required maxlength="120"></label>
+    <label>Ingrédients ou composants <textarea name="ingredients" maxlength="1000" rows="3" placeholder="Un ingrédient par ligne, avec sa quantité"></textarea></label>
+    <button class="btn">Ajouter à l’inventaire</button>
+  </form>
+  <p id="settings-status" role="status"></p>
+</dialog>
+<script>
+const settings = $('dmz-settings');
+const inventoryKey = 'dmz-custom-inventory-v1';
+const profileKey = 'dmz-player-name-v1';
+const trigger = document.createElement('button');
+trigger.className = 'settings-trigger';
+trigger.type = 'button';
+trigger.setAttribute('aria-label', 'Ouvrir les paramètres');
+trigger.setAttribute('aria-haspopup', 'dialog');
+document.querySelector('.hero').append(trigger);
+trigger.onclick = () => settings.showModal();
+$('settings-close').onclick = () => settings.close();
+
+const welcome = document.createElement('p');
+welcome.id = 'dmz-welcome';
+document.querySelector('.hero').after(welcome);
+const profileInput = $('settings-profile').elements.player;
+function showWelcome() {
+  const name = profileInput.value.trim();
+  welcome.hidden = !name;
+  welcome.textContent = name ? 'Bienvenue ' + name : '';
+}
+profileInput.value = localStorage.getItem(profileKey) || '';
+showWelcome();
+
+const status = $('settings-status');
+const custom = JSON.parse(localStorage.getItem(inventoryKey) || '{"families":[],"items":[]}');
+const familySelect = $('settings-item').elements.family;
+function escapeInventoryText(value) {
+  const span = document.createElement('span');
+  span.textContent = value;
+  return span.innerHTML;
+}
+function addFamily(family) {
+  groups.push({name:escapeInventoryText(family.label), type:family.type, icon:'▤', items:[]});
+}
+function addInventoryItem(item) {
+  const pair = [item.id, escapeInventoryText(item.label)];
+  groups[item.family].items.push(pair);
+  all.push(pair);
+  valid.add(item.id);
+}
+function refreshFamilies() {
+  familySelect.replaceChildren(...groups.map((group, index) => new Option(
+    custom.families[index - (groups.length - custom.families.length)]?.label || group.name, index
+  )));
+}
+function storeInventory() {
+  localStorage.setItem(inventoryKey, JSON.stringify(custom));
+}
+custom.families.forEach(addFamily);
+custom.items.forEach(addInventoryItem);
+checked = new Set([...checked].filter(id => valid.has(id)));
+const renderInventory = render;
+render = function () {
+  renderInventory();
+  for (const item of custom.items) {
+    const label = document.querySelector('[data-id="' + item.id + '"] + span');
+    if (!label || !item.ingredients) continue;
+    const details = document.createElement('small');
+    details.className = 'recipe-ingredients';
+    details.textContent = item.ingredients;
+    label.append(details);
+  }
+};
+$('settings-profile').onsubmit = event => {
+  event.preventDefault();
+  localStorage.setItem(profileKey, profileInput.value.trim());
+  showWelcome();
+  status.textContent = 'Nom enregistré.';
+};
+$('settings-family').onsubmit = event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const label = form.elements.label.value.trim();
+  if (!label) return;
+  const family = {label, type:form.elements.type.value};
+  custom.families.push(family);
+  storeInventory();
+  addFamily(family);
+  refreshFamilies();
+  familySelect.value = groups.length - 1;
+  form.reset();
+  status.textContent = 'Catégorie ajoutée. Tu peux y ajouter ton premier élément.';
+};
+$('settings-item').onsubmit = event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const label = form.elements.label.value.trim();
+  if (!label) return;
+  const family = Number(familySelect.value);
+  const item = {id:crypto.randomUUID(), family, label, ingredients:form.elements.ingredients.value.trim()};
+  custom.items.push(item);
+  storeInventory();
+  addInventoryItem(item);
+  update();
+  form.reset();
+  familySelect.value = family;
+  status.textContent = label + ' ajouté à l’inventaire.';
+};
+refreshFamilies();
+update();
+</script></body></html>
