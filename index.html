@@ -99,7 +99,10 @@ body{background:#05090c;padding:0}.app{max-width:620px;padding:0;margin:auto}.re
   <div class="mission-card sector"><span class="card-kicker">ZONE D’OPÉRATION</span><strong>DMZ <em> / </em> SECTEUR ACTIF</strong><span class="card-foot">EXTRACTION <b>EN ATTENTE</b></span><div class="radar"><span></span></div></div>
 </section>
 <section class="stats"><div class="stat"><strong id="total">58</strong><label>ÉLÉMENTS À RÉCUPÉRER</label></div><div class="stat"><strong id="done">0</strong><label>VALIDÉS</label></div><div class="stat"><strong id="left">58</strong><label>RESTANTS</label></div><div class="stat"><strong id="pct">0%</strong><label>PROGRESSION</label></div></section><div class="track"><div class="fill" id="fill"></div></div>
-<nav class="cats" aria-label="Catégories d'inventaire"><button class="cat active" data-cat="recipes"><span>▤<br>RECETTES & PLANS</span></button><button class="cat" data-cat="materials" aria-label="Matériaux"><span aria-hidden="true"></span></button><button class="cat" data-cat="weapons"><span>⌁<br>ARMES</span></button><button class="cat" data-cat="gear"><span>▣<br>ÉQUIPEMENTS & AMÉL.</span></button><button class="cat" data-cat="support"><span>✈<br>TIRS DE SOUTIEN</span></button></nav>
+<nav class="cats" aria-label="Catégories d’inventaire">
+  <button class="cat active" data-cat="recipes" aria-label="Recettes &amp; plans"><span>Recettes &amp; plans</span></button>
+  <button class="cat" data-cat="materials" aria-label="Matériaux"><span>Matériaux</span></button>
+</nav>
 <section class="panel active" id="panel-list"><div class="toolbar"><input class="search" id="search" placeholder="⌕ Rechercher un élément..."><button class="btn active" data-filter="all">Tous</button><button class="btn" data-filter="missing">Manquants</button><button class="btn good" data-filter="done">✓ Validés</button></div><div class="inventory-shell"><div class="heading"><h2>INVENTAIRE DE MISSION</h2><small id="count">58 ÉLÉMENTS</small></div><div class="frame" id="inventory"></div><span class="inventory-corner" aria-hidden="true"></span></div></section>
 <section class="panel" id="panel-progress"><div class="heading"><h2>PROGRESSION</h2></div><div class="frame" style="padding:22px"><h1 id="bigpct">0%</h1><p class="notice" id="report">Aucun élément validé pour le moment.</p><div class="track"><div class="fill" id="fill2"></div></div><div class="visual map" style="height:260px"><label>SECTEUR DMZ // CARTE TACTIQUE</label></div></div></section>
 </main><div class="toast" id="toast"></div>
@@ -724,5 +727,24 @@ for (const scene of document.querySelectorAll('.desktop-scene')) {
   font-family:'Arial Narrow','Aptos Narrow',Impact,sans-serif;
   font-weight:500;font-size:clamp(5px,1.3vw,14px);line-height:1;
   letter-spacing:0;white-space:nowrap;
+}
+.app .cats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cats .cat{height:clamp(86px,17vw,168px);aspect-ratio:auto;overflow:hidden;border:1px solid #657882}
+.cats .cat.active{border-color:#ff9b36}
+.cats .cat::before,.cats .cat::after{display:none}
+.cats .cat[data-cat="recipes"]{
+  background:linear-gradient(0deg,#070d12,#070d1270 36%,transparent 78%),
+  url('assets/categorie-armes.jpg') left center / 34% 100% no-repeat,
+  url('assets/categorie-equipements.jpg') center / 34% 100% no-repeat,
+  url('assets/categorie-tirs-soutien.jpg') right center / 34% 100% no-repeat;
+}
+.cats .cat[data-cat="materials"]{
+  background:linear-gradient(0deg,#070d12,#070d1270 36%,transparent 78%),url('assets/categorie-materiaux.jpg') center / cover;
+}
+.cats .cat[data-cat] span{
+  display:block;position:absolute;inset:auto 5px 9px;padding:0;
+  background:none;color:white;text-align:center;text-transform:uppercase;
+  font:700 clamp(12px,2.1vw,23px)/1.1 'Arial Narrow',Impact,sans-serif;
+  letter-spacing:.035em;white-space:normal;text-shadow:0 2px 6px #000;
 }
 </style></body></html>
