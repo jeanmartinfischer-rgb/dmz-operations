@@ -125,7 +125,7 @@ try{let a=JSON.parse(localStorage.getItem('dmz-operations-v1')||'[]');if(Array.i
 function save(){try{localStorage.setItem('dmz-operations-v1',JSON.stringify([...checked]))}catch(e){}}
 function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1800)}
 function update(){let n=checked.size,p=Math.round(n/all.length*100);$('total').textContent=all.length;$('done').textContent=n;$('left').textContent=all.length-n;$('pct').textContent=p+'%';$('heroPct').textContent=p+'%';$('mission').textContent='SUIVI D’EXTRACTION — '+p+'%';$('fill').style.width=p+'%';$('fill2').style.width=p+'%';$('bigpct').textContent=p+'%';$('report').textContent=n+' éléments validés sur '+all.length+'. '+(p===100?'Extraction réussie.':'Continue la mission avant extraction.');save();render()}
-function render(){let count=0,html='';groups.forEach((g,i)=>{let inCategory=category==='all'||(category==='recipes'&&g.type==='recipes')||(category==='materials'&&g.type==='materials')||(category==='weapons'&&g.name==='ARMES')||(category==='gear'&&['ÉQUIPEMENTS','AMÉLIORATIONS'].includes(g.name))||(category==='support'&&g.name==='TIRS DE SOUTIEN');if(!inCategory)return;let items=g.items.filter(([id,name])=>(!query||name.toLocaleLowerCase('fr').includes(query))&&(filter==='all'||(filter==='done'?checked.has(id):!checked.has(id))));if(!items.length)return;count+=items.length;let n=g.items.filter(([id])=>checked.has(id)).length;html+='<section class="group"><button class="groupHead" data-toggle="'+i+'"><span class="ico">'+g.icon+'</span><span class="gname">'+g.name+'</span><span class="gcount">'+n+'/'+g.items.length+'</span><span class="arrow">⌄</span></button><div class="items" id="group'+i+'">'+items.map(([id,name])=>'<label class="item '+(checked.has(id)?'done':'')+'"><input type="checkbox" data-id="'+id+'" '+(checked.has(id)?'checked':'')+'><span>'+name+'</span></label>').join('')+'</div></section>'});$('inventory').innerHTML=html||'<p class="notice">Aucun élément trouvé.</p>';$('count').textContent=count+' ÉLÉMENTS';document.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=> $('group'+b.dataset.toggle).classList.toggle('hide'));document.querySelectorAll('[data-id]').forEach(b=>b.onchange=()=>{if(b.checked)checked.add(b.dataset.id);else checked.delete(b.dataset.id);update();toast('Progression enregistrée')})}
+function render(){let count=0,html='';groups.forEach((g,i)=>{let inCategory=category==='all'||category===g.type||(category==='recipes'&&g.type==='recipes')||(category==='materials'&&g.type==='materials')||(category==='weapons'&&g.name==='ARMES')||(category==='gear'&&['ÉQUIPEMENTS','AMÉLIORATIONS'].includes(g.name))||(category==='support'&&g.name==='TIRS DE SOUTIEN');if(!inCategory)return;let items=g.items.filter(([id,name])=>(!query||name.toLocaleLowerCase('fr').includes(query))&&(filter==='all'||(filter==='done'?checked.has(id):!checked.has(id))));if(!items.length)return;count+=items.length;let n=g.items.filter(([id])=>checked.has(id)).length;html+='<section class="group"><button class="groupHead" data-toggle="'+i+'"><span class="ico">'+g.icon+'</span><span class="gname">'+g.name+'</span><span class="gcount">'+n+'/'+g.items.length+'</span><span class="arrow">⌄</span></button><div class="items" id="group'+i+'">'+items.map(([id,name])=>'<label class="item '+(checked.has(id)?'done':'')+'"><input type="checkbox" data-id="'+id+'" '+(checked.has(id)?'checked':'')+'><span>'+name+'</span></label>').join('')+'</div></section>'});$('inventory').innerHTML=html||'<p class="notice">Aucun élément trouvé.</p>';$('count').textContent=count+' ÉLÉMENTS';document.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=> $('group'+b.dataset.toggle).classList.toggle('hide'));document.querySelectorAll('[data-id]').forEach(b=>b.onchange=()=>{if(b.checked)checked.add(b.dataset.id);else checked.delete(b.dataset.id);update();toast('Progression enregistrée')})}
 document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{category=b.dataset.cat;document.querySelectorAll('[data-cat]').forEach(x=>x.classList.toggle('active',x===b));render()});document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));render()});$('search').oninput=e=>{query=e.target.value.toLocaleLowerCase('fr').trim();render()};
 function page(p){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));$('panel-'+(p==='list'?'list':p)).classList.add('active');document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===p));window.scrollTo({top:0,behavior:'smooth'})}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>page(b.dataset.page));
 $('export').onclick=()=>{let blob=new Blob([JSON.stringify({app:'DMZ OPERATIONS',completed:[...checked],exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='dmz-operations-sauvegarde.json';a.click();URL.revokeObjectURL(u);toast('Sauvegarde exportée')};$('import').onclick=()=>$('file').click();$('file').onchange=async e=>{try{let d=JSON.parse(await e.target.files[0].text()),a=Array.isArray(d)?d:d.completed;if(!Array.isArray(a))throw 0;checked=new Set(a.filter(x=>valid.has(x)));update();toast('Sauvegarde restaurée')}catch(x){toast('Fichier invalide')}e.target.value=''};update();
@@ -197,9 +197,13 @@ render();
     <button class="btn">Enregistrer le nom</button>
   </form>
   <form id="settings-family">
-    <label>Nouvelle catégorie <input name="label" required maxlength="80"></label>
-    <label>Afficher dans <select name="type"><option value="recipes">Recettes &amp; plans</option><option value="materials">Matériaux &amp; récupérations</option></select></label>
-    <button class="btn">Ajouter la catégorie</button>
+    <h3>Gérer mes catégories</h3>
+    <label>Catégorie <select name="edit"></select></label>
+    <label>Nom <input name="label" required maxlength="80"></label>
+    <label>Emplacement <select name="type"><option value="custom">Mes catégories</option><option value="recipes">Recettes &amp; plans</option><option value="materials">Matériaux &amp; récupérations</option></select></label>
+    <label>Photo facultative <input type="file" name="photo" accept="image/*"></label>
+    <button class="btn">Enregistrer la catégorie</button>
+    <button class="btn" type="button" id="remove-category" hidden>Supprimer la catégorie</button>
   </form>
   <form id="settings-item">
     <label>Catégorie de l’élément <select name="family"></select></label>
@@ -237,6 +241,60 @@ showWelcome();
 const status = $('settings-status');
 const custom = JSON.parse(localStorage.getItem(inventoryKey) || '{"families":[],"items":[]}');
 const familySelect = $('settings-item').elements.family;
+const categoryForm = $('settings-family');
+const editor = categoryForm.elements;
+const builtInCount = groups.length;
+const customTab = document.createElement('button');
+customTab.className = 'btn';
+customTab.textContent = 'Mes catégories';
+document.querySelector('#panel-list .toolbar').before(customTab);
+customTab.onclick = () => {
+  category = 'custom';
+  document.querySelectorAll('.cats .active').forEach(button => button.classList.remove('active'));
+  document.querySelector('#panel-list h2').textContent = 'MES CATÉGORIES';
+  render();
+};
+function resetCategoryEditor() {
+  const selected = custom.families[editor.edit.value];
+  editor.label.value = selected?.label || '';
+  editor.type.value = selected?.type || 'custom';
+  editor.photo.value = '';
+  $('remove-category').hidden = !selected;
+}
+editor.edit.onchange = resetCategoryEditor;
+function refreshCategoryEditor() {
+  editor.edit.replaceChildren(new Option('Créer une catégorie', ''), ...custom.families.map((family, index) => new Option(family.label, index)));
+  resetCategoryEditor();
+  customTab.hidden = !custom.families.some(family => family.type === 'custom');
+}
+function discardSettings() {
+  $('settings-item').reset();
+  profileInput.value = localStorage.getItem(profileKey) || '';
+  refreshCategoryEditor();
+  status.textContent = '';
+}
+settings.addEventListener('close', discardSettings);
+for (const form of settings.querySelectorAll('form')) {
+  const cancel = document.createElement('button');
+  cancel.type = 'button';
+  cancel.className = 'btn';
+  cancel.textContent = 'Annuler';
+  cancel.onclick = () => settings.close();
+  form.append(cancel);
+}
+async function compressCategoryPhoto(file) {
+  const bitmap = await createImageBitmap(file);
+  try {
+    const scale = Math.min(1, 640 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.72);
+  } finally {
+    bitmap.close();
+  }
+}
 function escapeInventoryText(value) {
   const span = document.createElement('span');
   span.textContent = value;
@@ -265,6 +323,16 @@ checked = new Set([...checked].filter(id => valid.has(id)));
 const renderInventory = render;
 render = function () {
   renderInventory();
+  custom.families.forEach((family, index) => {
+    const button = document.querySelector('#inventory [data-toggle="' + (builtInCount + index) + '"]');
+    if (!button || !family.photo) return;
+    const photo = document.createElement('img');
+    photo.className = 'category-photo';
+    photo.alt = '';
+    photo.src = family.photo;
+    button.classList.add('has-category-photo');
+    button.prepend(photo);
+  });
   for (const item of custom.items) {
     const label = document.querySelector('[data-id="' + item.id + '"] + span');
     if (!label || !item.ingredients) continue;
@@ -280,19 +348,59 @@ $('settings-profile').onsubmit = event => {
   showWelcome();
   status.textContent = 'Nom enregistré.';
 };
-$('settings-family').onsubmit = event => {
+$('settings-family').onsubmit = async event => {
   event.preventDefault();
   const form = event.currentTarget;
   const label = form.elements.label.value.trim();
   if (!label) return;
-  const family = {label, type:form.elements.type.value};
-  custom.families.push(family);
-  storeInventory();
-  addFamily(family);
+  const index = editor.edit.value;
+  const previous = custom.families[index];
+  const family = {label, type:editor.type.value, photo:previous?.photo || ''};
+  const file = editor.photo.files[0];
+  const submit = event.submitter;
+  submit.disabled = true;
+  try {
+    if (file) family.photo = await compressCategoryPhoto(file);
+    if (!settings.open || editor.edit.value !== index || (file && editor.photo.files[0] !== file)) return;
+    const families = custom.families.slice();
+    if (previous) families[Number(index)] = family;
+    else families.push(family);
+    localStorage.setItem(inventoryKey, JSON.stringify({...custom, families}));
+    custom.families = families;
+  } catch {
+    status.textContent = 'Impossible d’enregistrer la catégorie. Vérifie la photo ou l’espace disponible.';
+    return;
+  } finally {
+    submit.disabled = false;
+  }
+  if (previous) {
+    Object.assign(groups[builtInCount + Number(index)], {name:escapeInventoryText(label), type:family.type});
+  } else {
+    addFamily(family);
+  }
   refreshFamilies();
-  familySelect.value = groups.length - 1;
-  form.reset();
-  status.textContent = 'Catégorie ajoutée. Tu peux y ajouter ton premier élément.';
+  familySelect.value = builtInCount + (previous ? Number(index) : custom.families.length - 1);
+  refreshCategoryEditor();
+  render();
+  status.textContent = 'Catégorie enregistrée.';
+};
+$('remove-category').onclick = () => {
+  const index = Number(editor.edit.value);
+  const family = custom.families[index];
+  if (!editor.edit.value || !family) return;
+  const groupIndex = builtInCount + index;
+  if (!confirm('Supprimer « ' + family.label + ' » et les éléments qu’elle contient ?')) return;
+  const families = custom.families.filter((_, position) => position !== index);
+  const items = custom.items.filter(item => item.family !== groupIndex).map(item =>
+    item.family > groupIndex ? {...item, family:item.family - 1} : item
+  );
+  try {
+    localStorage.setItem(inventoryKey, JSON.stringify({families, items}));
+  } catch {
+    status.textContent = 'La suppression a échoué.';
+    return;
+  }
+  location.reload();
 };
 $('settings-item').onsubmit = event => {
   event.preventDefault();
@@ -310,9 +418,12 @@ $('settings-item').onsubmit = event => {
   status.textContent = label + ' ajouté à l’inventaire.';
 };
 refreshFamilies();
+refreshCategoryEditor();
 update();
 </script>
 <style>
+.groupHead.has-category-photo::before{display:none}
+.category-photo{width:27%;height:54px;object-fit:cover;flex-shrink:0;border-radius:4px}
 .toolbar .btn,.toolbar .search,#dmz-settings .btn {
   clip-path:none;
   border-radius:10px;
