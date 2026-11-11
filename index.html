@@ -127,7 +127,7 @@ try{let a=JSON.parse(localStorage.getItem('dmz-operations-v1')||'[]');if(Array.i
 function save(){try{localStorage.setItem('dmz-operations-v1',JSON.stringify([...checked]))}catch(e){}}
 function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1800)}
 function update(){let n=checked.size,p=Math.round(n/all.length*100);$('total').textContent=all.length;$('done').textContent=n;$('left').textContent=all.length-n;$('pct').textContent=p+'%';$('heroPct').textContent=p+'%';$('mission').textContent='SUIVI D’EXTRACTION — '+p+'%';$('fill').style.width=p+'%';$('fill2').style.width=p+'%';$('bigpct').textContent=p+'%';$('report').textContent=n+' éléments validés sur '+all.length+'. '+(p===100?'Extraction réussie.':'Continue la mission avant extraction.');save();render()}
-function render(){let count=0,html='';groups.forEach((g,i)=>{let inCategory=category==='all'||category===g.type||(category==='recipes'&&g.type==='recipes')||(category==='materials'&&g.type==='materials')||(category==='weapons'&&g.name==='ARMES')||(category==='gear'&&['ÉQUIPEMENTS','AMÉLIORATIONS'].includes(g.name))||(category==='support'&&g.name==='TIRS DE SOUTIEN');if(!inCategory)return;let items=g.items.filter(([id,name])=>(!query||name.toLocaleLowerCase('fr').includes(query))&&(filter==='all'||(filter==='done'?checked.has(id):!checked.has(id))));if(!items.length)return;count+=items.length;let n=g.items.filter(([id])=>checked.has(id)).length;html+='<section class="group"><button class="groupHead" data-toggle="'+i+'"><span class="ico">'+g.icon+'</span><span class="gname">'+g.name+'</span><span class="gcount">'+n+'/'+g.items.length+'</span><span class="arrow">⌄</span></button><div class="items" id="group'+i+'">'+items.map(([id,name])=>'<label class="item '+(checked.has(id)?'done':'')+'"><input type="checkbox" data-id="'+id+'" '+(checked.has(id)?'checked':'')+'><span>'+name+'</span></label>').join('')+'</div></section>'});$('inventory').innerHTML=html||'<p class="notice">Aucun élément trouvé.</p>';$('count').textContent=count+' ÉLÉMENTS';document.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=> $('group'+b.dataset.toggle).classList.toggle('hide'));document.querySelectorAll('[data-id]').forEach(b=>b.onchange=()=>{if(b.checked)checked.add(b.dataset.id);else checked.delete(b.dataset.id);update();toast('Progression enregistrée')})}
+function render(){let count=0,html='';groups.forEach((g,i)=>{let inCategory=category==='all'||category===g.type||(category==='recipes'&&g.type==='recipes')||(category==='materials'&&g.type==='materials')||(category==='weapons'&&g.name==='ARMES')||(category==='gear'&&['ÉQUIPEMENTS','AMÉLIORATIONS'].includes(g.name))||(category==='support'&&g.name==='TIRS DE SOUTIEN');if(!inCategory)return;let items=g.items.filter(([id,name])=>(!query||name.toLocaleLowerCase('fr').includes(query))&&(filter==='all'||(filter==='done'?checked.has(id):!checked.has(id))));if(!items.length)return;count+=items.length;let n=g.items.filter(([id])=>checked.has(id)).length;html+='<section class="group" data-family-type="'+g.type+'"><button class="groupHead" data-toggle="'+i+'"><span class="ico">'+g.icon+'</span><span class="gname">'+g.name+'</span><span class="gcount">'+n+'/'+g.items.length+'</span><span class="arrow">⌄</span></button><div class="items" id="group'+i+'">'+items.map(([id,name])=>'<label class="item '+(checked.has(id)?'done':'')+'"><input type="checkbox" data-id="'+id+'" '+(checked.has(id)?'checked':'')+'><span>'+name+'</span></label>').join('')+'</div></section>'});$('inventory').innerHTML=html||'<p class="notice">Aucun élément trouvé.</p>';$('count').textContent=count+' ÉLÉMENTS';document.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=> $('group'+b.dataset.toggle).classList.toggle('hide'));document.querySelectorAll('[data-id]').forEach(b=>b.onchange=()=>{if(b.checked)checked.add(b.dataset.id);else checked.delete(b.dataset.id);update();toast('Progression enregistrée')})}
 document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{category=b.dataset.cat;document.querySelectorAll('[data-cat]').forEach(x=>x.classList.toggle('active',x===b));render()});document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));render()});$('search').oninput=e=>{query=e.target.value.toLocaleLowerCase('fr').trim();render()};
 function page(p){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));$('panel-'+(p==='list'?'list':p)).classList.add('active');document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===p));window.scrollTo({top:0,behavior:'smooth'})}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>page(b.dataset.page));
 update();
@@ -746,5 +746,22 @@ for (const scene of document.querySelectorAll('.desktop-scene')) {
   background:none;color:white;text-align:center;text-transform:uppercase;
   font:700 clamp(12px,2.1vw,23px)/1.1 'Arial Narrow',Impact,sans-serif;
   letter-spacing:.035em;white-space:normal;text-shadow:0 2px 6px #000;
+}
+/* Material rows use the artwork-only part of the crates card. */
+#inventory [data-family-type="materials"] .groupHead {
+  gap:clamp(6px,1.2vw,12px);
+}
+#inventory [data-family-type="materials"] .groupHead:not(.has-category-photo)::before {
+  flex:0 0 clamp(48px,15%,108px);
+  height:clamp(34px,7vw,52px);
+  margin:0;
+  border-radius:4px;
+  background:url('assets/dmz-ui-reference.jpg') 29.4% 32.6% / 600% 2327.27% no-repeat !important;
+}
+#inventory [data-family-type="materials"] .gname {
+  min-width:0;white-space:normal;overflow-wrap:anywhere;
+}
+#inventory [data-family-type="materials"] :is(.ico,.gcount,.arrow) {
+  flex-shrink:0;
 }
 </style></body></html>
