@@ -481,4 +481,24 @@ update();
   border-width:0 2px 2px 0;
   border-bottom-right-radius:14px;
 }
+/* Small bevels on controls, sharper orange brackets on the outer frame. */
+.toolbar .btn,.toolbar .search,.inventory-shell .group {
+  border-radius:5px;
+  clip-path:polygon(5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px),0 5px);
+}
+.toolbar :focus-visible { outline-offset:-3px; }
+.inventory-shell,.inventory-shell .heading,.inventory-shell #inventory {border-radius:0}
+.inventory-shell::before,.inventory-shell::after,.inventory-corner {
+  width:32px;
+  height:32px;
+  border:0;
+  border-radius:0;
+  background:#ff8b2b;
+  clip-path:polygon(12px 0,100% 0,100% 2px,13px 2px,2px 13px,2px 100%,0 100%,0 12px);
+}
+.inventory-shell::after {transform:scaleY(-1)}
+.inventory-corner {transform:rotate(180deg)}
+.cats .cat {
+  clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 7px,100% calc(100% - 7px),calc(100% - 7px) 100%,7px 100%,0 calc(100% - 7px),0 7px);
+}
 </style></body></html>
