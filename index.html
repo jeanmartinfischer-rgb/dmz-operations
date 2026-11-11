@@ -248,7 +248,7 @@ const profileInput = $('settings-profile').elements.player;
 function showWelcome() {
   const name = profileInput.value.trim();
   welcome.hidden = !name;
-  welcome.textContent = name ? 'Bienvenue ' + name : '';
+  welcome.textContent = name ? 'Bienvenue en mission, ' + name : '';
 }
 profileInput.value = localStorage.getItem(profileKey) || '';
 showWelcome();
@@ -532,7 +532,7 @@ $('export').onclick=()=>{let blob=new Blob([JSON.stringify({app:'DMZ OPERATIONS'
     background-image:linear-gradient(0deg,#080f14 4%,transparent 54%,#080f1466),url('assets/dmz-command-panorama.jpg');
     background-size:cover;background-position:left center;
     opacity:.46;filter:saturate(.72);
-    animation:scene-drift 19s ease-in-out infinite alternate,scene-cut 8s steps(1,end) infinite;
+    animation:scene-drift 22s ease-in-out infinite alternate,scene-cut 60s steps(1,end) infinite;
   }
   .desktop-scene--right::before{background-position:right center;animation-delay:-8s,-3.3s}
   .desktop-scene::after{
@@ -545,30 +545,65 @@ $('export').onclick=()=>{let blob=new Blob([JSON.stringify({app:'DMZ OPERATIONS'
     background:#ffc182;box-shadow:0 0 9px 2px #ff791f;
     z-index:1;animation:scene-ember 6s linear infinite;opacity:0;
   }
-  .desktop-scene i:nth-child(2){left:61%;bottom:20%;animation-delay:-4s}
-  .desktop-scene i:nth-child(3){left:43%;bottom:9%;animation-delay:-7s}
-  .desktop-scene i:nth-child(4){left:78%;bottom:34%;animation-duration:8s;animation-delay:-2s}
-  .desktop-scene i:nth-child(5){left:12%;bottom:28%;animation-duration:5s;animation-delay:-3s}
-  .desktop-scene i:nth-child(6){left:51%;bottom:41%;animation-duration:9s;animation-delay:-6s}
-  .desktop-scene i:nth-child(7){left:32%;bottom:24%;animation-duration:7s;animation-delay:-5s}
-  .desktop-scene i:nth-child(8){left:68%;bottom:12%;animation-duration:5.5s;animation-delay:-1s}
 }
 @keyframes scene-drift{
   0%{transform:translate3d(-1%,0,0) scale(1)}
-  34%{transform:translate3d(0,-1%,0) scale(1.035);animation-timing-function:steps(2,end)}
-  38%{transform:translate3d(2%,-1%,0) scale(1.06)}
-  73%{transform:translate3d(0,0,0) scale(1.045);animation-timing-function:steps(2,end)}
-  76%{transform:translate3d(-2%,1%,0) scale(1.065)}
   100%{transform:translate3d(1%,-1%,0) scale(1.06)}
 }
 @keyframes scene-cut{
-  0%,19.4%,51.5%,83.3%,100%{opacity:.46;translate:0 0}
-  18%,50%,82%{opacity:.19;translate:2px -1px}
-  18.7%,50.8%,82.6%{opacity:.34;translate:-2px 1px}
+  0%,4.2%,10.2%,15.2%,23.2%,31.2%,39.2%,46.2%,53.2%,62.2%,70.2%,76.2%,85.2%,92.2%,100%{opacity:.46;translate:0 0}
+  4%,10%,15%,23%,31%,39%,46%,53%,62%,70%,76%,85%,92%{opacity:.19;translate:2px -1px}
+  4.1%,10.1%,15.1%,23.1%,31.1%,39.1%,46.1%,53.1%,62.1%,70.1%,76.1%,85.1%,92.1%{opacity:.34;translate:-2px 1px}
 }
 @keyframes scene-ember{0%,100%{opacity:0}20%{opacity:.64}80%{opacity:.2}100%{transform:translate3d(24px,-165px,0)}}
 @media (prefers-reduced-motion:reduce){.desktop-scene::before,.desktop-scene i{animation:none}}
+.hero::after {
+  top:23.5%;left:51%;width:31%;height:10%;aspect-ratio:auto;
+  background-size:29% auto;background-color:#060a0d;
+  mix-blend-mode:normal;opacity:1;
+}
+#dmz-welcome {
+  margin:8px 0 14px;padding:10px 14px;border:1px solid #647881;
+  border-left:3px solid #ff821c;border-radius:5px;
+  font-family:'Arial Narrow',Arial,sans-serif;font-weight:700;letter-spacing:.06em;
+}
+@media (min-width:1240px) and (hover:hover) and (pointer:fine) {
+  .desktop-scene .ember {
+    left:var(--x);bottom:var(--y);width:var(--size);height:var(--size);
+    background:var(--glow);box-shadow:0 0 6px #ff791fa8;
+    animation:natural-ember var(--duration) linear var(--delay) infinite;
+  }
+}
+@keyframes natural-ember {
+  0%{opacity:0;transform:translate3d(0,0,0) scale(.7)}
+  13%{opacity:var(--peak)}
+  43%{transform:translate3d(var(--bend),-67px,0) scale(1)}
+  66%{opacity:calc(var(--peak) * .55)}
+  100%{opacity:0;transform:translate3d(var(--drift),var(--rise),0) scale(.4)}
+}
+@media (prefers-reduced-motion:reduce){.desktop-scene .ember{animation:none}}
 </style>
-<div class="desktop-scene desktop-scene--left" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-<div class="desktop-scene desktop-scene--right" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="desktop-scene desktop-scene--left" aria-hidden="true"></div>
+<div class="desktop-scene desktop-scene--right" aria-hidden="true"></div>
+<script>
+for (const scene of document.querySelectorAll('.desktop-scene')) {
+  const particles = document.createDocumentFragment();
+  for (let index = 0; index < 28; index++) {
+    const ember = document.createElement('i');
+    ember.className = 'ember';
+    const duration = 5 + Math.random() * 8;
+    const properties = {
+      x: (5 + Math.random() * 90) + '%', y: (3 + Math.random() * 55) + '%',
+      size: (1 + Math.random() * 2.4) + 'px', peak: .25 + Math.random() * .55,
+      duration: duration + 's', delay: (-Math.random() * duration) + 's',
+      bend: (-15 + Math.random() * 30) + 'px', drift: (-25 + Math.random() * 65) + 'px',
+      rise: (-140 - Math.random() * 160) + 'px',
+      glow: index % 4 === 0 ? '#ffd29c' : '#ff8a3e'
+    };
+    for (const [name, value] of Object.entries(properties)) ember.style.setProperty('--' + name, value);
+    particles.append(ember);
+  }
+  scene.append(particles);
+}
+</script>
 </body></html>
