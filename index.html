@@ -578,7 +578,51 @@ $('export').onclick=()=>{let blob=new Blob([JSON.stringify({app:'DMZ OPERATIONS'
   100%{opacity:0;transform:translate3d(var(--drift),var(--rise),0) scale(.4)}
 }
 @media (prefers-reduced-motion:reduce){.desktop-scene .ember{animation:none}}
+/* Original extraction artwork, with live values in the original positions. */
+.app > .hero {aspect-ratio:1024/265}
+.app > .stats.extraction-panel {
+  position:relative; display:block; width:104.2%; aspect-ratio:1024/190;
+  min-height:0; margin:0 -2.1% !important; border:0; clip-path:none;
+  background:url('assets/dmz-ui-reference.jpg') 0 19.688% / 100% 808.421% no-repeat;
+  container-type:inline-size;
+}
+.app > .stats.extraction-panel .stat {
+  position:absolute; top:49%; left:var(--counter-x); right:auto;
+  display:grid; place-items:center; width:7.4%; height:22%; padding:0;
+  transform:translate(-50%,-50%); border:0; border-radius:2px;
+  background:#080e12;
+}
+.extraction-panel .stat:nth-child(1){--counter-x:43%}
+.extraction-panel .stat:nth-child(2){--counter-x:66%}
+.extraction-panel .stat:nth-child(3){--counter-x:86%}
+.app > .stats.extraction-panel .stat:last-child{
+  --counter-x:18.8%;top:47%;width:10%;height:33%;border-radius:50%;background:#030709
+}
+.app > .stats.extraction-panel .stat strong {
+  color:#f3f4f2;font-size:clamp(14px,4.3cqw,45px);line-height:1;
+  font-family:'Arial Narrow',Impact,Arial,sans-serif;font-variant-numeric:tabular-nums;
+}
+.app > .stats.extraction-panel .stat label {
+  display:block;position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
+}
+.extraction-panel::after {
+  content:"";position:absolute;pointer-events:none;left:10.55%;top:2.8%;width:16.4%;
+  aspect-ratio:1;border-radius:50%;
+  background:conic-gradient(#ff8a26 var(--extraction-progress,0%),transparent 0);
+  mask-image:radial-gradient(farthest-side,transparent 74%,#000 75%);
+}
+.app > .track:has(#fill){display:none}
 </style>
+<script>
+const extractionPanel = document.querySelector('.app > .stats');
+extractionPanel.classList.add('extraction-panel');
+const updateExtraction = update;
+update = function () {
+  updateExtraction();
+  extractionPanel.style.setProperty('--extraction-progress', $('pct').textContent);
+};
+update();
+</script>
 <div class="desktop-scene" aria-hidden="true"></div>
 <script>
 for (const scene of document.querySelectorAll('.desktop-scene')) {
