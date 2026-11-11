@@ -367,7 +367,21 @@ const materialIcons = [
   'bond','catalyst','detonators','meteor','nylon','synthetic',
   'adm','intel','execution','bio'
 ];
+const expandedMaterialIcons = [
+  'Synthétiques rigides','Métaux réactifs','Biomatériaux','Détonateurs','Unité de contrôle','Capteurs électroniques','Tiges de crosse','Catalyseur de liaison',
+  'Alliage structurel','Processeur','Composés nitro','Fibres à haute résistance','Circuit imprimé','Tissu en nylon','Plaques en alliage','Tissu balistique',
+  'Stratifié de nylon','Régulateur de puissance','Réactifs stabilisés','Explosifs volatils','Composites militaires','Composés expérimentaux','Alliage nanostructuré','Module de communication',
+  'Composants usinés','Module RF prototype','Notes de combat régionales','Synthétiques','Électronique','Produits chimiques','Métaux'
+];
 function materialThumbnail(id) {
+  const expandedIndex = id.startsWith('mw4-') ? Number(id.slice(4)) : -1;
+  if (Number.isInteger(expandedIndex) && expandedIndex >= 0 && expandedIndex < expandedMaterialIcons.length) {
+    const thumbnail = document.createElement('span');
+    thumbnail.className = 'material-thumbnail material-thumbnail-expanded';
+    thumbnail.setAttribute('aria-hidden', 'true');
+    thumbnail.style.backgroundPosition = (expandedIndex % 8 * 100 / 7) + '% ' + (Math.floor(expandedIndex / 8) * 100 / 3) + '%';
+    return thumbnail;
+  }
   const index = materialIcons.indexOf(id);
   if (index < 0) return null;
   const thumbnail = document.createElement('span');
@@ -388,7 +402,11 @@ function syncItemVisual() {
     radio.required = itemVisual.value === 'icon';
   }
 }
-for (const [id, name] of groups.filter(group => group.type === 'materials').flatMap(group => group.items)) {
+const predefinedChoices = [
+  ...expandedMaterialIcons.map((name, index) => ['mw4-' + index, name]),
+  ...groups.filter(group => group.type === 'materials').flatMap(group => group.items)
+];
+for (const [id, name] of predefinedChoices) {
   const thumbnail = materialThumbnail(id);
   if (!thumbnail) continue;
   const choice = document.createElement('label');
@@ -871,4 +889,22 @@ for (const scene of document.querySelectorAll('.desktop-scene')) {
 #material-icon-picker label{display:grid;justify-items:center;cursor:pointer}
 #dmz-settings #material-icon-picker input{width:auto;padding:0}
 .item-custom-photo{object-fit:cover;background:none}
+.material-thumbnail-expanded{
+  background-image:url('assets/mw4-materiaux-31.jpg');background-size:800% 400%;
+}
+.cats .cat[data-cat="materials"]{
+  background:linear-gradient(0deg,#070d12,#070d1270 36%,transparent 78%),
+    url('assets/categorie-materiaux.jpg') center / cover;
+}
+.cats .cat {
+  --tab-shape:polygon(14px 0,calc(100% - 24px) 0,100% 18px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);
+  clip-path:var(--tab-shape);border:0;border-radius:0;
+}
+.cats .cat::after {
+  content:"";display:block;position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(130deg,#b3c4ca,#526c78 45%,#344b56 72%,#a7b8be);
+  clip-path:polygon(evenodd,14px 0,calc(100% - 24px) 0,100% 18px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px,14px 0,14px 1px,1px 14px,1px calc(100% - 14px),14px calc(100% - 1px),calc(100% - 14px) calc(100% - 1px),calc(100% - 1px) calc(100% - 14px),calc(100% - 1px) 18px,calc(100% - 24px) 1px,14px 1px);
+}
+.cats .cat.active::after{background:linear-gradient(130deg,#ff9c43,#556d77 38%,#556d77 73%,#ff9c43)}
+.cats .cat:focus-visible{outline:2px solid #ff9c43;outline-offset:-5px}
 </style></body></html>
